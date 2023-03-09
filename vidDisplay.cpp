@@ -3,7 +3,11 @@
 #include <filesystem>
 
 #include <opencv2/opencv.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/calib3d.hpp>
+#include <opencv2/core/types_c.h>
 
+#include "filters.h"
 
 int main(int argc, char *argv[]) {
         cv::VideoCapture *capdev;
@@ -26,6 +30,8 @@ int main(int argc, char *argv[]) {
         int captured = 0;
         std::__fs::filesystem::create_directory("./captured");
 
+        cv::Size patternSize(9,6);
+
         for(;;) {
                 *capdev >> frame; // get a new frame from the camera, treat as a stream
                 if( frame.empty() ) {
@@ -33,6 +39,20 @@ int main(int argc, char *argv[]) {
                   break;
                 }
                 
+                cv::Mat gray;
+                grayscale(frame, gray);
+                
+                std::vector<cv::Point2f> cornerSet;
+                bool patternFound = cv::findChessboardCorners(gray, patternSize, cornerSet, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE+ cv::CALIB_CB_FAST_CHECK);
+
+                if(patternFound){
+                        cv::cornerSubPix(gray, cornerSet, cv::Size(11, 11), cv::Size(-1, -1),cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
+                        std::cout<< "Corners: "<< cornerSet.size() << std::endl;
+                        std::cout<< "First corner: "<< cornerSet[0].x << "," << cornerSet[0].y << std::endl;
+                }
+  
+                cv::drawChessboardCorners(frame, patternSize, cornerSet, patternFound);
+
                 cv::imshow("Video", frame);
 
                 // see if there is a waiting keystroke

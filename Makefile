@@ -8,7 +8,7 @@ OPENCV = `pkg-config opencv4 --cflags --libs`
 
 LIBS = $(OPENCV)
 
-vidDisplay : vidDisplay.cpp
+vidDisplay : vidDisplay.cpp filters.cpp
 	$(CC) $(CFLAGS) $(CAM_PLIST_FLAG) -o $@ $^ $(LIBS) 
 
 
