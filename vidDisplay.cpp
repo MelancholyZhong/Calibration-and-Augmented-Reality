@@ -60,14 +60,14 @@ int main(int argc, char *argv[]) {
                         recentCornerSet = cornerSet;
                         recentShot = frame;
                         haveRecent = true;
-                        std::cout<< "Corners: "<< cornerSet.size() << std::endl;
-                        std::cout<< "First corner: "<< cornerSet[0].x << "," << cornerSet[0].y << std::endl;
+                        // std::cout<< "Corners: "<< cornerSet.size() << std::endl;
+                        // std::cout<< "First corner: "<< cornerSet[0].x << "," << cornerSet[0].y << std::endl;
                 }
 
                 cv::imshow("Video", frame);
 
                 // see if there is a waiting keystroke
-                char key = cv::waitKey(10);
+                char key = cv::pollKey();
                 if( key == 'q') {
                     break;
                 }else if (key == 's' && haveRecent){
@@ -77,6 +77,10 @@ int main(int argc, char *argv[]) {
                         std::string capturedStr = std::to_string(captured);
                         std::string fileName = "./captured/capture_" + capturedStr + ".jpg";
                         cv::imwrite(fileName,recentShot);
+
+                        if(cornerList.size()>=5){
+                                calibrateAndSave(pointList, cornerList, refS);
+                        }
                 }
         }
 

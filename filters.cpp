@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cmath>
+
 #include <opencv2/opencv.hpp>
+
 #include "filters.h"
 
 int grayscale(cv::Mat &src, cv::Mat &dst){
