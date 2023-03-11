@@ -8,7 +8,6 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core/types_c.h>
 
-#include "filters.h"
 #include "helpers.h"
 
 int main(int argc, char *argv[]) {
