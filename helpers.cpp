@@ -91,57 +91,13 @@ void saveIntrinsic(cv::Mat &cameraMatrix, cv::Mat &distCoeffs){
         return;
 }
 
-
-void lowerBody(cv::Mat &frame, cv::Point2f position, cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &cameraMatrix, cv::Mat &distCoeffs){
-    std::vector<cv::Vec3f> objectPoints;
-    cv::Vec3f point1(3+position.x,-3+position.y,0);
-    objectPoints.push_back(point1);
-    cv::Vec3f point2(3+position.x,-3+position.y,2);
-    objectPoints.push_back(point2);
-    cv::Vec3f point3(6+position.x,-3+position.y,0);
-    objectPoints.push_back(point3);
-    cv::Vec3f point4(6+position.x,-3+position.y,2);
-    objectPoints.push_back(point4);
-    cv::Vec3f point5(6+position.x,-6+position.y,0);
-    objectPoints.push_back(point5);
-    cv::Vec3f point6(6+position.x,-6+position.y,2);
-    objectPoints.push_back(point6);
-    cv::Vec3f point7(3+position.x,-6+position.y,0);
-    objectPoints.push_back(point7);
-    cv::Vec3f point8(3+position.x,-6+position.y,2);
-    objectPoints.push_back(point8);
+void drawCube(cv::Mat &frame, cv::Point3f position, cv::Scalar color, cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &cameraMatrix, cv::Mat &distCoeffs){
+    std::vector<cv::Point3f> objectPoints{cv::Point3f(position.x,position.y,position.z), cv::Point3f(position.x,position.y,position.z+1), 
+                    cv::Point3f(1+position.x,position.y,position.z), cv::Point3f(1+position.x,position.y,position.z+1),
+                    cv::Point3f(1+position.x,-1+position.y,position.z), cv::Point3f(1+position.x,-1+position.y,position.z+1),
+                    cv::Point3f(position.x,-1+position.y,position.z), cv::Point3f(position.x,-1+position.y,position.z+1)};
     std::vector<cv::Point2f> imagePoints;
     cv::projectPoints(objectPoints, rvecs, tvecs, cameraMatrix, distCoeffs, imagePoints);
-    cv::Scalar color(149,86,17);
-    for(int i=0; i<4; i++){
-        cv::line(frame, imagePoints[2*i], imagePoints[(2*i+2)%8], color, 3);
-        cv::line(frame, imagePoints[2*i+1], imagePoints[(2*i+2)%8+1], color, 3);
-        cv::line(frame, imagePoints[2*i], imagePoints[2*i+1], color, 3);
-    }
-    return;
-}
-
-void upperBody(cv::Mat &frame, cv::Point2f position, cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &cameraMatrix, cv::Mat &distCoeffs){
-    std::vector<cv::Vec3f> objectPoints;
-    cv::Vec3f point1(3+position.x,-3+position.y,2);
-    objectPoints.push_back(point1);
-    cv::Vec3f point2(3+position.x,-3+position.y,6);
-    objectPoints.push_back(point2);
-    cv::Vec3f point3(6+position.x,-3+position.y,2);
-    objectPoints.push_back(point3);
-    cv::Vec3f point4(6+position.x,-3+position.y,6);
-    objectPoints.push_back(point4);
-    cv::Vec3f point5(6+position.x,-6+position.y,2);
-    objectPoints.push_back(point5);
-    cv::Vec3f point6(6+position.x,-6+position.y,6);
-    objectPoints.push_back(point6);
-    cv::Vec3f point7(3+position.x,-6+position.y,2);
-    objectPoints.push_back(point7);
-    cv::Vec3f point8(3+position.x,-6+position.y,6);
-    objectPoints.push_back(point8);
-    std::vector<cv::Point2f> imagePoints;
-    cv::projectPoints(objectPoints, rvecs, tvecs, cameraMatrix, distCoeffs, imagePoints);
-    cv::Scalar color(75,221,244);
     for(int i=0; i<4; i++){
         cv::line(frame, imagePoints[2*i], imagePoints[(2*i+2)%8], color, 3);
         cv::line(frame, imagePoints[2*i+1], imagePoints[(2*i+2)%8+1], color, 3);
@@ -150,11 +106,29 @@ void upperBody(cv::Mat &frame, cv::Point2f position, cv::Mat &rvecs, cv::Mat &tv
     return;
 }
    
-
-void renderObject(cv::Mat &frame, cv::Point2f position, cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &cameraMatrix, cv::Mat &distCoeffs){
-    lowerBody(frame, position, rvecs, tvecs, cameraMatrix, distCoeffs);
-    upperBody(frame, position, rvecs, tvecs, cameraMatrix, distCoeffs);
-    //leftEye(frame, rvecs, tvecs, cameraMatrix, distCoeffs);
+void renderObject(cv::Mat &frame, cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &cameraMatrix, cv::Mat &distCoeffs){
+    std::vector<cv::Point3f> trunck{cv::Point3f(3,-3,0), cv::Point3f(3,-3,1), cv::Point3f(3,-3,2), cv::Point3f(3,-3,3)};
+    std::vector<cv::Point3f> canopy{cv::Point3f(3,-4,3), cv::Point3f(4,-4,3), cv::Point3f(2,-3,3), cv::Point3f(4,-3,3),cv::Point3f(5,-3,3),
+                                                            cv::Point3f(2,-2,3), cv::Point3f(3,-2,3), cv::Point3f(2,-3,4), cv::Point3f(3,-3,4),cv::Point3f(3,-3,5)};
+    std::vector<cv::Point3f> heart{cv::Point3f(7,-6,0), cv::Point3f(7,-6,1), cv::Point3f(7,-6,2), 
+                                                        cv::Point3f(6,-6,1),  cv::Point3f(6,-6,2), cv::Point3f(6,-6,3),
+                                                        cv::Point3f(5,-6,2),  cv::Point3f(8,-6,1), cv::Point3f(8,-6,2),
+                                                        cv::Point3f(8,-6,3),  cv::Point3f(9,-6,2)};
+    cv::Scalar trunckColor(66,92,114);
+    cv::Scalar green(34,139,40);
+    cv::Scalar pink(172, 142, 252);
+    for(int i=0; i<trunck.size(); i++){
+        auto position = trunck[i];
+        drawCube(frame, position, trunckColor, rvecs, tvecs, cameraMatrix, distCoeffs);
+    }
+    for(int i=0; i<canopy.size(); i++){
+        auto position = canopy[i];
+        drawCube(frame, position, green, rvecs, tvecs, cameraMatrix, distCoeffs);
+    }
+    for(int i=0; i<heart.size(); i++){
+        auto position = heart[i];
+        drawCube(frame, position, pink, rvecs, tvecs, cameraMatrix, distCoeffs);
+    }
     return;
 }
 

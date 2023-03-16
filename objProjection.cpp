@@ -81,8 +81,7 @@ int main(int argc, char *argv[]) {
                                 cv::drawFrameAxes(frame, cameraMatrix, distCoeffs, rvecs, tvecs, 2);
                                 // std::cout<< "Corners: "<< cornerSet.size() << std::endl;
                                 // std::cout<< "First corner: "<< cornerSet[0].x << "," << cornerSet[0].y << std::endl;
-                                cv::Point2f position(0,0);
-                                renderObject(frame, position, rvecs, tvecs, cameraMatrix, distCoeffs);
+                                renderObject(frame, rvecs, tvecs, cameraMatrix, distCoeffs);
                         }
                         cv::drawChessboardCorners(frame, patternSize, cornerSet, patternFound);
                 }else if(mode == 1){
@@ -95,8 +94,7 @@ int main(int argc, char *argv[]) {
                         if(markerIds.size() == 1){
                                 cv::solvePnP(arucoPointSet, markerCorners[0], cameraMatrix, distCoeffs, rvecs, tvecs);
                                 cv::drawFrameAxes(frame, cameraMatrix, distCoeffs, rvecs, tvecs, 2);
-                                cv::Point2f position(0,0);
-                                renderObject(frame, position, rvecs, tvecs, cameraMatrix, distCoeffs);
+                                renderObject(frame, rvecs, tvecs, cameraMatrix, distCoeffs);
                         }
                 }
 

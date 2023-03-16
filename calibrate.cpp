@@ -76,7 +76,6 @@ int main(int argc, char *argv[]) {
                         std::string capturedStr = std::to_string(captured);
                         std::string fileName = "./captured/capture_" + capturedStr + ".jpg";
                         cv::imwrite(fileName,recentShot);
-
                         if(cornerList.size()>=5){
                                 calibrateAndSave(pointList, cornerList, refS);
                         }

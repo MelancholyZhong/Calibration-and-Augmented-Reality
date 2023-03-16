@@ -15,7 +15,7 @@ void printDoubleMatrix(cv::Mat &matrix);
 
 void saveIntrinsic(cv::Mat &cameraMatrix, cv::Mat &distCoeffs);
 
-void renderObject(cv::Mat &frame, cv::Point2f position, cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &cameraMatrix, cv::Mat &distCoeffs);
+void renderObject(cv::Mat &frame, cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &cameraMatrix, cv::Mat &distCoeffs);
 
 void drawHarrisCorner(cv::Mat &frame, cv::Mat &corners);
 
