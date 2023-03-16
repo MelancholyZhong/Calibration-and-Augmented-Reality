@@ -42,6 +42,18 @@ int generateOutSidePoints(std::vector<cv::Vec3f> &outSidePoints, cv::Size patter
     return 0;
 }
 
+void generateArucoPoints(std::vector<cv::Vec3f> &arucoPointSet){
+    cv::Vec3f point1(0,0,0);
+    arucoPointSet.push_back(point1);
+    cv::Vec3f point2(1,0,0);
+    arucoPointSet.push_back(point2);
+    cv::Vec3f point3(1,-1,0);
+    arucoPointSet.push_back(point3);
+    cv::Vec3f point4(0,-1,0);
+    arucoPointSet.push_back(point4);
+    return;
+}
+
 int calibrateAndSave(std::vector<std::vector<cv::Vec3f>> &pointList, std::vector<std::vector<cv::Point2f>> &cornerList, cv::Size imgSize){
     cv::Mat cameraMatrix  = cv::Mat::eye(3,3,CV_64F);
     cameraMatrix.at<double>(0,2) = imgSize.width/2;
@@ -80,23 +92,23 @@ void saveIntrinsic(cv::Mat &cameraMatrix, cv::Mat &distCoeffs){
 }
 
 
-void lowerBody(cv::Mat &frame, cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &cameraMatrix, cv::Mat &distCoeffs){
+void lowerBody(cv::Mat &frame, cv::Point2f position, cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &cameraMatrix, cv::Mat &distCoeffs){
     std::vector<cv::Vec3f> objectPoints;
-    cv::Vec3f point1(3,-3,0);
+    cv::Vec3f point1(3+position.x,-3+position.y,0);
     objectPoints.push_back(point1);
-    cv::Vec3f point2(3,-3,2);
+    cv::Vec3f point2(3+position.x,-3+position.y,2);
     objectPoints.push_back(point2);
-    cv::Vec3f point3(6,-3,0);
+    cv::Vec3f point3(6+position.x,-3+position.y,0);
     objectPoints.push_back(point3);
-    cv::Vec3f point4(6,-3,2);
+    cv::Vec3f point4(6+position.x,-3+position.y,2);
     objectPoints.push_back(point4);
-    cv::Vec3f point5(6,-6,0);
+    cv::Vec3f point5(6+position.x,-6+position.y,0);
     objectPoints.push_back(point5);
-    cv::Vec3f point6(6,-6,2);
+    cv::Vec3f point6(6+position.x,-6+position.y,2);
     objectPoints.push_back(point6);
-    cv::Vec3f point7(3,-6,0);
+    cv::Vec3f point7(3+position.x,-6+position.y,0);
     objectPoints.push_back(point7);
-    cv::Vec3f point8(3,-6,2);
+    cv::Vec3f point8(3+position.x,-6+position.y,2);
     objectPoints.push_back(point8);
     std::vector<cv::Point2f> imagePoints;
     cv::projectPoints(objectPoints, rvecs, tvecs, cameraMatrix, distCoeffs, imagePoints);
@@ -109,8 +121,56 @@ void lowerBody(cv::Mat &frame, cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &cameraMa
     return;
 }
 
-
-void renderObject(cv::Mat &frame, cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &cameraMatrix, cv::Mat &distCoeffs){
-    lowerBody(frame, rvecs, tvecs, cameraMatrix, distCoeffs);
+void upperBody(cv::Mat &frame, cv::Point2f position, cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &cameraMatrix, cv::Mat &distCoeffs){
+    std::vector<cv::Vec3f> objectPoints;
+    cv::Vec3f point1(3+position.x,-3+position.y,2);
+    objectPoints.push_back(point1);
+    cv::Vec3f point2(3+position.x,-3+position.y,6);
+    objectPoints.push_back(point2);
+    cv::Vec3f point3(6+position.x,-3+position.y,2);
+    objectPoints.push_back(point3);
+    cv::Vec3f point4(6+position.x,-3+position.y,6);
+    objectPoints.push_back(point4);
+    cv::Vec3f point5(6+position.x,-6+position.y,2);
+    objectPoints.push_back(point5);
+    cv::Vec3f point6(6+position.x,-6+position.y,6);
+    objectPoints.push_back(point6);
+    cv::Vec3f point7(3+position.x,-6+position.y,2);
+    objectPoints.push_back(point7);
+    cv::Vec3f point8(3+position.x,-6+position.y,6);
+    objectPoints.push_back(point8);
+    std::vector<cv::Point2f> imagePoints;
+    cv::projectPoints(objectPoints, rvecs, tvecs, cameraMatrix, distCoeffs, imagePoints);
+    cv::Scalar color(75,221,244);
+    for(int i=0; i<4; i++){
+        cv::line(frame, imagePoints[2*i], imagePoints[(2*i+2)%8], color, 3);
+        cv::line(frame, imagePoints[2*i+1], imagePoints[(2*i+2)%8+1], color, 3);
+        cv::line(frame, imagePoints[2*i], imagePoints[2*i+1], color, 3);
+    }
     return;
+}
+   
+
+void renderObject(cv::Mat &frame, cv::Point2f position, cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &cameraMatrix, cv::Mat &distCoeffs){
+    lowerBody(frame, position, rvecs, tvecs, cameraMatrix, distCoeffs);
+    upperBody(frame, position, rvecs, tvecs, cameraMatrix, distCoeffs);
+    //leftEye(frame, rvecs, tvecs, cameraMatrix, distCoeffs);
+    return;
+}
+
+void drawHarrisCorner(cv::Mat &frame, cv::Mat &corners){
+        cv::Mat corners_norm, corners_norm_scaled;
+        int threshold = 180;
+        cv::Scalar color(255,0,0);
+        cv::normalize( corners, corners_norm, 0, 255, cv::NORM_MINMAX, CV_32FC1, cv::Mat() );
+        cv::convertScaleAbs( corners_norm, corners_norm_scaled );
+        for(int i=0; i<frame.rows; i++){
+            uchar *rptr = corners_norm_scaled.ptr<uchar>(i);
+            for(int j=0; j<frame.cols; j++){
+                if(rptr[j] > threshold){
+                    cv::circle(frame, cv::Point(j, i), 10, color, 3);
+                }
+            }
+        }
+        return;
 }
