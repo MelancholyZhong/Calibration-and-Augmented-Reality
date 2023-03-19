@@ -45,7 +45,7 @@ In the treminal
    - `m`: change between chessboard or ArUco
    - `o`: decide if we project the virtual object or just the axes
 
-For task 7 (robust feature) and extension 1
+### For task 7 (robust feature) and extension 1
 
 In the treminal
 
