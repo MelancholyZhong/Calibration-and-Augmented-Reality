@@ -1,3 +1,9 @@
+/**
+    Calibration and Augmented Reality
+    Created by Yao Zhong for CS 5330 Computer Vision Spring 2023
+
+    Calibration main function
+*/
 #include <iostream>
 #include <string>
 #include <filesystem>
@@ -28,14 +34,16 @@ int main(int argc, char *argv[]) {
         cv::namedWindow("Video", 1); // identifies a window
         cv::Mat frame;
 
+        //image capturing settings
         int captured = 0;
         std::__fs::filesystem::create_directory("./captured");
 
+        //initial settings for global variables
         cv::Size patternSize(9,6);
         std::vector<cv::Vec3f> pointSet;
         generatePointSet(pointSet, patternSize);
         std::vector<std::vector<cv::Vec3f>> pointList;
-        bool haveRecent = false;
+        bool haveRecent = false; // use the recent values that has been detected as the calibration value
         std::vector<cv::Point2f> recentCornerSet;
         cv::Mat recentShot;
         std::vector<std::vector<cv::Point2f>> cornerList;
@@ -47,18 +55,21 @@ int main(int argc, char *argv[]) {
                   break;
                 }
                 
+                //call the grascale function to get the grayscale image
                 cv::Mat gray;
                 grayscale(frame, gray);
                 
+                //Try to find the pattern of chessboard in a image
                 std::vector<cv::Point2f> cornerSet;
                 bool patternFound = cv::findChessboardCorners(gray, patternSize, cornerSet, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE+ cv::CALIB_CB_FAST_CHECK);
 
                 if(patternFound){
                         cv::cornerSubPix(gray, cornerSet, cv::Size(11, 11), cv::Size(-1, -1),cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
                         cv::drawChessboardCorners(frame, patternSize, cornerSet, patternFound);
-                        recentCornerSet = cornerSet;
+                        recentCornerSet = cornerSet; //save the recent found values for latter saving
                         recentShot = frame;
                         haveRecent = true;
+                        //uncommet these lines will print how many corners found and first corner
                         // std::cout<< "Corners: "<< cornerSet.size() << std::endl;
                         // std::cout<< "First corner: "<< cornerSet[0].x << "," << cornerSet[0].y << std::endl;
                 }
@@ -70,12 +81,14 @@ int main(int argc, char *argv[]) {
                 if( key == 'q') {
                     break;
                 }else if (key == 's' && haveRecent){
+                        //when "s" is pressed, the recent detected corners and image will be saved
                         pointList.push_back(pointSet);
                         cornerList.push_back(recentCornerSet);
                         captured += 1;
                         std::string capturedStr = std::to_string(captured);
-                        std::string fileName = "./captured/capture_" + capturedStr + ".jpg";
+                        std::string fileName = "./captured/calibrateImg_" + capturedStr + ".jpg";
                         cv::imwrite(fileName,recentShot);
+                        //when the calibration image is more than 5, automatically update the intrinsic parameters.
                         if(cornerList.size()>=5){
                                 calibrateAndSave(pointList, cornerList, refS);
                         }
